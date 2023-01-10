@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "libaom",
-    platforms: [.iOS(.v13), .macOS(.v12), .macCatalyst(.v14)],
+    platforms: [.iOS(.v11), .macOS(.v12), .macCatalyst(.v14), .watchOS(.v5), .tvOS(.v11)],
     products: [
         .library(
             name: "libaom",

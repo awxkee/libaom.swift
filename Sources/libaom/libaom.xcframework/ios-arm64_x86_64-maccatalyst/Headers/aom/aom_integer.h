@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2016, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -12,7 +12,7 @@
 #define AOM_AOM_AOM_INTEGER_H_
 
 /* get ptrdiff_t, size_t, wchar_t, NULL */
-#include <stddef.h>
+#include <stddef.h>  // IWYU pragma: export
 
 #if defined(_MSC_VER)
 #define AOM_FORCE_INLINE __forceinline
@@ -33,8 +33,8 @@
 #endif
 #endif  // __cplusplus
 
-#include <stdint.h>
-#include <inttypes.h>
+#include <stdint.h>    // IWYU pragma: export
+#include <inttypes.h>  // IWYU pragma: export
 
 #if defined(__cplusplus)
 extern "C" {

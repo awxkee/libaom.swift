@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2016, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -30,7 +30,7 @@
 extern "C" {
 #endif
 
-#include "aom/aom_codec.h"
+#include "aom/aom_codec.h"  // IWYU pragma: export
 #include "aom/aom_external_partition.h"
 
 /*!\brief Current ABI version number
@@ -637,6 +637,7 @@ typedef struct aom_codec_enc_cfg {
   /*!\brief Target data rate
    *
    * Target bitrate to use for this stream, in kilobits per second.
+   * Max allowed value is 2000000
    */
   unsigned int rc_target_bitrate;
 
@@ -903,7 +904,7 @@ typedef struct aom_codec_enc_cfg {
 
 /*!\brief Initialize an encoder instance
  *
- * Initializes a encoder context using the given interface. Applications
+ * Initializes an encoder context using the given interface. Applications
  * should call the aom_codec_enc_init convenience macro instead of this
  * function directly, to ensure that the ABI version number parameter
  * is properly initialized.
@@ -912,6 +913,9 @@ typedef struct aom_codec_enc_cfg {
  * is not thread safe and should be guarded with a lock if being used
  * in a multithreaded context.
  *
+ * If aom_codec_enc_init_ver() fails, it is not necessary to call
+ * aom_codec_destroy() on the encoder context.
+ *
  * \param[in]    ctx     Pointer to this instance's context.
  * \param[in]    iface   Pointer to the algorithm interface to use.
  * \param[in]    cfg     Configuration to use, if known.
@@ -919,7 +923,7 @@ typedef struct aom_codec_enc_cfg {
  * \param[in]    ver     ABI version number. Must be set to
  *                       AOM_ENCODER_ABI_VERSION
  * \retval #AOM_CODEC_OK
- *     The decoder algorithm initialized.
+ *     The encoder algorithm has been initialized.
  * \retval #AOM_CODEC_MEM_ERROR
  *     Memory allocation failed.
  */
@@ -1003,11 +1007,11 @@ aom_codec_err_t aom_codec_enc_config_set(aom_codec_ctx_t *ctx,
 aom_fixed_buf_t *aom_codec_get_global_headers(aom_codec_ctx_t *ctx);
 
 /*!\brief usage parameter analogous to AV1 GOOD QUALITY mode. */
-#define AOM_USAGE_GOOD_QUALITY (0)
+#define AOM_USAGE_GOOD_QUALITY 0u
 /*!\brief usage parameter analogous to AV1 REALTIME mode. */
-#define AOM_USAGE_REALTIME (1)
+#define AOM_USAGE_REALTIME 1u
 /*!\brief usage parameter analogous to AV1 all intra mode. */
-#define AOM_USAGE_ALL_INTRA (2)
+#define AOM_USAGE_ALL_INTRA 2u
 
 /*!\brief Encode a frame
  *
@@ -1024,6 +1028,10 @@ aom_fixed_buf_t *aom_codec_get_global_headers(aom_codec_ctx_t *ctx);
  * \param[in]    img       Image data to encode, NULL to flush.
  *                         Encoding sample values outside the range
  *                         [0..(1<<img->bit_depth)-1] is undefined behavior.
+ *                         Note: Although img is declared as a const pointer,
+ *                         if AV1E_SET_DENOISE_NOISE_LEVEL is set to a nonzero
+ *                         value aom_codec_encode() modifies (denoises) the
+ *                         samples in img->planes[i] .
  * \param[in]    pts       Presentation time stamp, in timebase units. If img
  *                         is NULL, pts is ignored.
  * \param[in]    duration  Duration to show frame, in timebase units. If img
@@ -1037,6 +1045,11 @@ aom_fixed_buf_t *aom_codec_get_global_headers(aom_codec_ctx_t *ctx);
  *     Interface is not an encoder interface.
  * \retval #AOM_CODEC_INVALID_PARAM
  *     A parameter was NULL, the image format is unsupported, etc.
+ *
+ * \note
+ * `duration` is of the unsigned long type, which can be 32 or 64 bits.
+ * `duration` must be less than or equal to UINT32_MAX so that its range is
+ * independent of the size of unsigned long.
  */
 aom_codec_err_t aom_codec_encode(aom_codec_ctx_t *ctx, const aom_image_t *img,
                                  aom_codec_pts_t pts, unsigned long duration,
